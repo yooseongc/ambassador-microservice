@@ -1,9 +1,8 @@
-version: '3.9'
+version: '3'
 services:
   email-backend:
     build: .
+    image: ambassador-microservice/email:0.0.2
     env_file:
       - .env
-    volumes:
-      - .:/app
 

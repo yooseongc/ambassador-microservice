@@ -1,32 +1,36 @@
 version: '3.9'
 services:
-  checkout_backend:
+  checkout-backend:
     build: .
     command: >
       sh -c "python manage.py wait_for_db &&
              python manage.py runserver 0.0.0.0:8000"
     volumes:
       - .:/app
+    env_file:
+      - .env
     ports:
       - "8004:8000"
     depends_on:
-      - checkout_db
+      - checkout-db
     networks:
       - checkout
       - users
 
-  checkout_queue:
+  checkout-queue:
     build: .
     command: >
       sh -c "python manage.py wait_for_db &&
              python consumer.py"
     restart: always
+    env_file:
+      - .env
     depends_on:
-      - checkout_db
+      - checkout-db
     networks:
       - checkout
 
-  checkout_db:
+  checkout-db:
     image: mysql:8
     restart: always
     environment:

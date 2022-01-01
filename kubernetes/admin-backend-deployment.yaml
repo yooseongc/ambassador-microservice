@@ -1,0 +1,229 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: admin-backend
+  name: admin-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: admin-backend
+  template:
+    metadata:
+      labels:
+        io.kompose.service: admin-backend
+    spec:
+      containers:
+        - args:
+            - sh
+            - -c
+            - |-
+              python manage.py wait_for_db && python manage.py runserver 0.0.0.0:8000
+          env:
+            - name: BOOTSTRAP_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  key: BOOTSTRAP_SERVERS
+                  name: admin-backend-env
+            - name: DB_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_DATABASE
+                  name: admin-backend-env
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_HOST
+                  name: admin-backend-env
+            - name: DB_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_PASSWORD
+                  name: admin-backend-env
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_PORT
+                  name: admin-backend-env
+            - name: DB_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_USERNAME
+                  name: admin-backend-env
+            - name: DJANGO_SECRET_KEY
+              valueFrom:
+                configMapKeyRef:
+                  key: DJANGO_SECRET_KEY
+                  name: admin-backend-env
+            - name: GROUP_ID
+              valueFrom:
+                configMapKeyRef:
+                  key: GROUP_ID
+                  name: admin-backend-env
+            - name: KAFKA_TOPIC
+              valueFrom:
+                configMapKeyRef:
+                  key: KAFKA_TOPIC
+                  name: admin-backend-env
+            - name: SASL_MECHANISM
+              valueFrom:
+                configMapKeyRef:
+                  key: SASL_MECHANISM
+                  name: admin-backend-env
+            - name: SASL_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  key: SASL_PASSWORD
+                  name: admin-backend-env
+            - name: SASL_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  key: SASL_USERNAME
+                  name: admin-backend-env
+            - name: SECURITY_PROTOCOL
+              valueFrom:
+                configMapKeyRef:
+                  key: SECURITY_PROTOCOL
+                  name: admin-backend-env
+            - name: USERS_MS
+              valueFrom:
+                configMapKeyRef:
+                  key: USERS_MS
+                  name: admin-backend-env
+          image: ambassador-microservice/admin:0.0.1
+          name: admin-backend
+          ports:
+            - containerPort: 8000
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+
+---
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: admin-queue
+  name: admin-queue
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: admin-queue
+  template:
+    metadata:
+      labels:
+        io.kompose.service: admin-queue
+    spec:
+      containers:
+        - args:
+            - sh
+            - -c
+            - |-
+              python manage.py wait_for_db && python consumer.py
+          env:
+            - name: BOOTSTRAP_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  key: BOOTSTRAP_SERVERS
+                  name: admin-backend-env
+            - name: DB_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_DATABASE
+                  name: admin-backend-env
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_HOST
+                  name: admin-backend-env
+            - name: DB_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_PASSWORD
+                  name: admin-backend-env
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_PORT
+                  name: admin-backend-env
+            - name: DB_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_USERNAME
+                  name: admin-backend-env
+            - name: DJANGO_SECRET_KEY
+              valueFrom:
+                configMapKeyRef:
+                  key: DJANGO_SECRET_KEY
+                  name: admin-backend-env
+            - name: GROUP_ID
+              valueFrom:
+                configMapKeyRef:
+                  key: GROUP_ID
+                  name: admin-backend-env
+            - name: KAFKA_TOPIC
+              valueFrom:
+                configMapKeyRef:
+                  key: KAFKA_TOPIC
+                  name: admin-backend-env
+            - name: SASL_MECHANISM
+              valueFrom:
+                configMapKeyRef:
+                  key: SASL_MECHANISM
+                  name: admin-backend-env
+            - name: SASL_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  key: SASL_PASSWORD
+                  name: admin-backend-env
+            - name: SASL_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  key: SASL_USERNAME
+                  name: admin-backend-env
+            - name: SECURITY_PROTOCOL
+              valueFrom:
+                configMapKeyRef:
+                  key: SECURITY_PROTOCOL
+                  name: admin-backend-env
+            - name: USERS_MS
+              valueFrom:
+                configMapKeyRef:
+                  key: USERS_MS
+                  name: admin-backend-env
+          image: ambassador-microservice/admin:0.0.1
+          name: admin-queue
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: admin-backend
+  name: admin-backend
+spec:
+  ports:
+    - name: "8002"
+      port: 8002
+      targetPort: 8000
+  selector:
+    io.kompose.service: admin-backend
+
+
+

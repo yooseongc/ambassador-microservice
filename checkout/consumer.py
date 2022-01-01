@@ -1,10 +1,4 @@
 import json, os, django
-from dotenv import load_dotenv
-
-load_dotenv()
-BOOTSTRAP_SERVER = os.getenv('BOOTSTRAP_SERVER')
-API_KEY = os.getenv('API_KEY')
-API_SECRET = os.getenv('API_SECRET')
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "app.settings")
 django.setup()
@@ -14,16 +8,16 @@ from core.models import KafkaError
 from confluent_kafka import Consumer
 
 consumer = Consumer({
-    'bootstrap.servers': BOOTSTRAP_SERVER,
-    'security.protocol': 'SASL_SSL',
-    'sasl.username': API_KEY,
-    'sasl.password': API_SECRET,
-    'sasl.mechanism': 'PLAIN',
-    'group.id': 'ambassador-microservice',
+    'bootstrap.servers': os.getenv('BOOTSTRAP_SERVERS'),
+    'security.protocol': os.getenv('SECURITY_PROTOCOL'),
+    'sasl.username': os.getenv('SASL_USERNAME'),
+    'sasl.password': os.getenv('SASL_PASSWORD'),
+    'sasl.mechanism': os.getenv('SASL_MECHANISM'),
+    'group.id': os.getenv('GROUP_ID'),
     'auto.offset.reset': 'earliest'
 })
 
-consumer.subscribe(['checkout_topic'])
+consumer.subscribe([os.getenv('KAFKA_TOPIC')])
 
 try:
     while True:

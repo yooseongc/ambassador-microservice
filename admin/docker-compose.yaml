@@ -1,7 +1,9 @@
 version: '3.9'
 services:
-  admin_backend:
+  admin-backend:
     build: .
+    env_file:
+      - .env
     command: >
       sh -c "python manage.py wait_for_db &&
              python manage.py runserver 0.0.0.0:8000"
@@ -10,23 +12,25 @@ services:
     ports:
       - "8002:8000"
     depends_on:
-      - admin_db
+      - admin-db
     networks:
       - admin
       - users
 
-  admin_queue:
+  admin-queue:
     build: .
+    env_file:
+      - .env
     command: >
       sh -c "python manage.py wait_for_db &&
              python consumer.py"
     restart: always
     depends_on:
-      - admin_db
+      - admin-db
     networks:
       - admin
 
-  admin_db:
+  admin-db:
     image: mysql:8
     restart: always
     environment:

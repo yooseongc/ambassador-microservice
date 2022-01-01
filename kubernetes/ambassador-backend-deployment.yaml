@@ -1,0 +1,280 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: ambassador-backend
+  name: ambassador-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: ambassador-backend
+  template:
+    metadata:
+      labels:
+        io.kompose.service: ambassador-backend
+    spec:
+      containers:
+        - args:
+            - sh
+            - -c
+            - python manage.py wait_for_db && python manage.py runserver 0.0.0.0:8000
+          env:
+            - name: BOOTSTRAP_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  key: BOOTSTRAP_SERVERS
+                  name: ambassador-backend-env
+            - name: DB_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_DATABASE
+                  name: ambassador-backend-env
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_HOST
+                  name: ambassador-backend-env
+            - name: DB_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_PASSWORD
+                  name: ambassador-backend-env
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_PORT
+                  name: ambassador-backend-env
+            - name: DB_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_USERNAME
+                  name: ambassador-backend-env
+            - name: DJANGO_SECRET_KEY
+              valueFrom:
+                configMapKeyRef:
+                  key: DJANGO_SECRET_KEY
+                  name: ambassador-backend-env
+            - name: GROUP_ID
+              valueFrom:
+                configMapKeyRef:
+                  key: GROUP_ID
+                  name: ambassador-backend-env
+            - name: KAFKA_TOPIC
+              valueFrom:
+                configMapKeyRef:
+                  key: KAFKA_TOPIC
+                  name: ambassador-backend-env
+            - name: REDIS_URL
+              valueFrom:
+                configMapKeyRef:
+                  key: REDIS_URL
+                  name: ambassador-backend-env
+            - name: SASL_MECHANISM
+              valueFrom:
+                configMapKeyRef:
+                  key: SASL_MECHANISM
+                  name: ambassador-backend-env
+            - name: SASL_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  key: SASL_PASSWORD
+                  name: ambassador-backend-env
+            - name: SASL_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  key: SASL_USERNAME
+                  name: ambassador-backend-env
+            - name: SECURITY_PROTOCOL
+              valueFrom:
+                configMapKeyRef:
+                  key: SECURITY_PROTOCOL
+                  name: ambassador-backend-env
+            - name: USERS_MS
+              valueFrom:
+                configMapKeyRef:
+                  key: USERS_MS
+                  name: ambassador-backend-env
+          image: ambassador-microservice/ambassador:0.0.1
+          name: ambassador-backend
+          ports:
+            - containerPort: 8000
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: ambassador-backend
+  name: ambassador-backend
+spec:
+  ports:
+    - name: "8003"
+      port: 8003
+      targetPort: 8000
+  selector:
+    io.kompose.service: ambassador-backend
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: ambassador-queue
+  name: ambassador-queue
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: ambassador-queue
+  template:
+    metadata:
+      labels:
+        io.kompose.service: ambassador-queue
+    spec:
+      containers:
+        - args:
+            - sh
+            - -c
+            - python manage.py wait_for_db && python consumer.py
+          env:
+            - name: BOOTSTRAP_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  key: BOOTSTRAP_SERVERS
+                  name: ambassador-backend-env
+            - name: DB_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_DATABASE
+                  name: ambassador-backend-env
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_HOST
+                  name: ambassador-backend-env
+            - name: DB_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_PASSWORD
+                  name: ambassador-backend-env
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_PORT
+                  name: ambassador-backend-env
+            - name: DB_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_USERNAME
+                  name: ambassador-backend-env
+            - name: DJANGO_SECRET_KEY
+              valueFrom:
+                configMapKeyRef:
+                  key: DJANGO_SECRET_KEY
+                  name: ambassador-backend-env
+            - name: GROUP_ID
+              valueFrom:
+                configMapKeyRef:
+                  key: GROUP_ID
+                  name: ambassador-backend-env
+            - name: KAFKA_TOPIC
+              valueFrom:
+                configMapKeyRef:
+                  key: KAFKA_TOPIC
+                  name: ambassador-backend-env
+            - name: REDIS_URL
+              valueFrom:
+                configMapKeyRef:
+                  key: REDIS_URL
+                  name: ambassador-backend-env
+            - name: SASL_MECHANISM
+              valueFrom:
+                configMapKeyRef:
+                  key: SASL_MECHANISM
+                  name: ambassador-backend-env
+            - name: SASL_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  key: SASL_PASSWORD
+                  name: ambassador-backend-env
+            - name: SASL_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  key: SASL_USERNAME
+                  name: ambassador-backend-env
+            - name: SECURITY_PROTOCOL
+              valueFrom:
+                configMapKeyRef:
+                  key: SECURITY_PROTOCOL
+                  name: ambassador-backend-env
+            - name: USERS_MS
+              valueFrom:
+                configMapKeyRef:
+                  key: USERS_MS
+                  name: ambassador-backend-env
+          image: ambassador-microservice/ambassador:0.0.1
+          name: ambassador-queue
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: redis
+  name: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: redis
+  template:
+    metadata:
+      labels:
+        io.kompose.service: redis
+    spec:
+      containers:
+        - image: redis
+          name: redis
+          ports:
+            - containerPort: 6379
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: redis
+  name: redis
+spec:
+  ports:
+    - name: "6379"
+      port: 6379
+      targetPort: 6379
+  selector:
+    io.kompose.service: redis

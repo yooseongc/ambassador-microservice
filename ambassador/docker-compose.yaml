@@ -1,33 +1,37 @@
 version: '3.9'
 services:
-  ambassador_backend:
+  ambassador-backend:
     build: .
     command: >
       sh -c "python manage.py wait_for_db &&
              python manage.py runserver 0.0.0.0:8000"
     volumes:
       - .:/app
+    env_file:
+      - .env
     ports:
       - "8003:8000"
     depends_on:
-      - ambassador_db
+      - ambassador-db
       - redis
     networks:
       - ambassador
       - users
 
-  ambassador_queue:
+  ambassador-queue:
     build: .
     command: >
       sh -c "python manage.py wait_for_db &&
              python consumer.py"
     restart: always
+    env_file:
+      - .env
     depends_on:
-      - ambassador_db
+      - ambassador-db
     networks:
       - ambassador
 
-  ambassador_db:
+  ambassador-db:
     image: mysql:8
     restart: always
     environment:

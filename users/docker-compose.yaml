@@ -1,6 +1,6 @@
 version: '3.9'
 services:
-  users_backend:
+  users-backend:
     build: .
     container_name: users-ms
     volumes:
@@ -8,11 +8,11 @@ services:
     ports:
       - "8001:8000"
     depends_on:
-      - users_db
+      - users-db
     networks:
       - users
 
-  users_db:
+  users-db:
     image: mysql:8
     restart: always
     environment:

@@ -1,0 +1,233 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: checkout-backend
+  name: checkout-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: checkout-backend
+  template:
+    metadata:
+      labels:
+        io.kompose.service: checkout-backend
+    spec:
+      containers:
+        - args:
+            - sh
+            - -c
+            - python manage.py wait_for_db && python manage.py runserver 0.0.0.0:8000
+          env:
+            - name: BOOTSTRAP_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  key: BOOTSTRAP_SERVERS
+                  name: checkout-backend-env
+            - name: DB_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_DATABASE
+                  name: checkout-backend-env
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_HOST
+                  name: checkout-backend-env
+            - name: DB_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_PASSWORD
+                  name: checkout-backend-env
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_PORT
+                  name: checkout-backend-env
+            - name: DB_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_USERNAME
+                  name: checkout-backend-env
+            - name: DJANGO_SECRET_KEY
+              valueFrom:
+                configMapKeyRef:
+                  key: DJANGO_SECRET_KEY
+                  name: checkout-backend-env
+            - name: GROUP_ID
+              valueFrom:
+                configMapKeyRef:
+                  key: GROUP_ID
+                  name: checkout-backend-env
+            - name: KAFKA_TOPIC
+              valueFrom:
+                configMapKeyRef:
+                  key: KAFKA_TOPIC
+                  name: checkout-backend-env
+            - name: SASL_MECHANISM
+              valueFrom:
+                configMapKeyRef:
+                  key: SASL_MECHANISM
+                  name: checkout-backend-env
+            - name: SASL_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  key: SASL_PASSWORD
+                  name: checkout-backend-env
+            - name: SASL_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  key: SASL_USERNAME
+                  name: checkout-backend-env
+            - name: SECURITY_PROTOCOL
+              valueFrom:
+                configMapKeyRef:
+                  key: SECURITY_PROTOCOL
+                  name: checkout-backend-env
+            - name: STRIPE_API_KEY
+              valueFrom:
+                configMapKeyRef:
+                  key: STRIPE_API_KEY
+                  name: checkout-backend-env
+            - name: USERS_MS
+              valueFrom:
+                configMapKeyRef:
+                  key: USERS_MS
+                  name: checkout-backend-env
+          image: ambassador-microservice/checkout:0.0.1
+          name: checkout-backend
+          ports:
+            - containerPort: 8000
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: checkout-queue
+  name: checkout-queue
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: checkout-queue
+  template:
+    metadata:
+      labels:
+        io.kompose.service: checkout-queue
+    spec:
+      containers:
+        - args:
+            - sh
+            - -c
+            - python manage.py wait_for_db && python consumer.py
+          env:
+            - name: BOOTSTRAP_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  key: BOOTSTRAP_SERVERS
+                  name: checkout-backend-env
+            - name: DB_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_DATABASE
+                  name: checkout-backend-env
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_HOST
+                  name: checkout-backend-env
+            - name: DB_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_PASSWORD
+                  name: checkout-backend-env
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_PORT
+                  name: checkout-backend-env
+            - name: DB_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  key: DB_USERNAME
+                  name: checkout-backend-env
+            - name: DJANGO_SECRET_KEY
+              valueFrom:
+                configMapKeyRef:
+                  key: DJANGO_SECRET_KEY
+                  name: checkout-backend-env
+            - name: GROUP_ID
+              valueFrom:
+                configMapKeyRef:
+                  key: GROUP_ID
+                  name: checkout-backend-env
+            - name: KAFKA_TOPIC
+              valueFrom:
+                configMapKeyRef:
+                  key: KAFKA_TOPIC
+                  name: checkout-backend-env
+            - name: SASL_MECHANISM
+              valueFrom:
+                configMapKeyRef:
+                  key: SASL_MECHANISM
+                  name: checkout-backend-env
+            - name: SASL_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  key: SASL_PASSWORD
+                  name: checkout-backend-env
+            - name: SASL_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  key: SASL_USERNAME
+                  name: checkout-backend-env
+            - name: SECURITY_PROTOCOL
+              valueFrom:
+                configMapKeyRef:
+                  key: SECURITY_PROTOCOL
+                  name: checkout-backend-env
+            - name: STRIPE_API_KEY
+              valueFrom:
+                configMapKeyRef:
+                  key: STRIPE_API_KEY
+                  name: checkout-backend-env
+            - name: USERS_MS
+              valueFrom:
+                configMapKeyRef:
+                  key: USERS_MS
+                  name: checkout-backend-env
+          image: ambassador-microservice/checkout:0.0.2
+          name: checkout-queue
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: checkout-backend
+  name: checkout-backend
+spec:
+  ports:
+    - name: "8004"
+      port: 8004
+      targetPort: 8000
+  selector:
+    io.kompose.service: checkout-backend
