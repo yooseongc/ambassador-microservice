@@ -15,12 +15,9 @@ const Layout = (props: any) => {
             async () => {
                 try {
                     const {data} = await axios.get('user');
-                    if (data?.detail) {
-                        throw new Error(data.detail)
-                    }
                     props.setUser(data);
                 } catch (e) {
-                    setRedirect(true);
+                    console.log(e);
                 }
             }
         )();

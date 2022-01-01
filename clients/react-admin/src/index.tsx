@@ -7,7 +7,7 @@ import axios from "axios";
 import {configureStore} from "./redux/configureStore";
 import {Provider} from "react-redux";
 
-axios.defaults.baseURL = 'http://localhost:8002/api/';
+axios.defaults.baseURL = 'http://34.149.46.244/api/admin/';
 axios.defaults.withCredentials = true;
 
 const store = configureStore();
